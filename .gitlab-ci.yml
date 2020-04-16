@@ -1,0 +1,12 @@
+deploy:
+  stage: deploy  
+  image: docker:git
+  script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_SERVER_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa 157.245.111.214 >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - ssh root@157.245.111.214 "cd /var/www/diamond-exchange-abir/;git pull;php artisan migrate"
